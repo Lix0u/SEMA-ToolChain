@@ -50,3 +50,6 @@ wl_model.pkl
 # TODO dl link
 /home/crochetch/Documents/Projects/MalwareAnalysis/SEMA-ToolChain-packing/src/ToolChainSCDG/procedures/windows7_ddls
 /home/crochetch/Documents/Projects/MalwareAnalysis/SEMA-ToolChain-packing/src/ToolChainSCDG/procedures/windows10_ddls
+
+src/databases/*
+src/submodules/SEMA-quickspan 
