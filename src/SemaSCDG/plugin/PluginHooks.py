@@ -112,55 +112,10 @@ class PluginHooks: # TODO replace with classses
         #self.hooks["cpuid"] = [0x559e37,0x559e27,0x559e68]
         
     def hook(self,state,proj,call_sim):
-        if False: # TODO 
-            if "std" in self.hooks:
-                for addr in self.hooks["std"]:
-                    proj.hook(
-                        addr,
-                        call_sim.custom_simproc_windows["custom_hook"]["StdHook"](plength=1),
-                        length=1
-                    )          
-            if "cld" in self.hooks:
-                for addr in self.hooks["cld"]:
-                    proj.hook(
-                        addr,
-                        call_sim.custom_simproc_windows["custom_hook"]["CldHook"](plength=1),
-                        length=1
-                    )
-            if "rep movsd" in self.hooks:
-                for addr in self.hooks["rep movsd"]:
-                    proj.hook(
-                        addr,
-                        call_sim.custom_simproc_windows["custom_hook"]["RepMovsdHook"](plength=2),
-                        length=2
-                    )    
-            if "rep movsb" in self.hooks:
-                for addr in self.hooks["rep movsb"]:
-                    proj.hook(
-                        addr,
-                        call_sim.custom_simproc_windows["custom_hook"]["RepMovsbHook"](plength=2),
-                        length=2
-                    )   
-           
-            if "rep stosd" in self.hooks:
-                for addr in self.hooks["rep stosd"]:
-                    proj.hook(
-                        addr,
-                        call_sim.custom_simproc_windows["custom_hook"]["RepStosdHook"](plength=2),
-                        length=2
-                    )
-        
-            for addr in self.hooks["cpuid"]:
-                proj.hook(
-                    addr,
-                    call_sim.custom_simproc_windows["custom_hook"]["CPUIDHook"](plength=2),
-                    length=2
-                ) 
-        # TODO change key per class name and add list for multiple hooks                 
         for fun in self.hooks.keys():
             if fun == "copy" or fun == "copy_2":
                 proj.hook(
-                    self.hooks[fun],
+                    self.hooks[fun], #adress of the function
                     call_sim.custom_simproc_windows["custom_hook"]["CopyHook"](plength=len(self.general_hooks[fun])),
                     length=len(self.general_hooks[fun])
                 )        

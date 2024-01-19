@@ -221,7 +221,13 @@ class ArgumentParserSCDG:
             "--hooks",
             help="activates the hooks for time-consuming functions  (default : False)",
             action="store_true",
-   
+
+        )
+        self.group_rats.add_argument(
+            "--hooks_SAFE",
+            help="activates the hooks for time-consuming functions with SAFE (default : False)",
+            action="store_true",
+
         )
         
         self.group_scdg = self.parser.add_argument_group('SCDG creation parameter')
@@ -354,8 +360,8 @@ class ArgumentParserSCDG:
         if not self.tool_scdg.print_on:
             self.tool_scdg.print_on = args.verbose
         self.tool_scdg.debug_error = args.debug_error
-        expl_method = "DFS"   if args.DFS else \
-                     ("BFS"   if args.BFS \
+        expl_method = "DFS"   if args.DFS \
+                else ("BFS"   if args.BFS \
                 else ("CDFS"  if args.CDFS \
                 else ("DBFS"  if args.DBFS \
                 else ("SDFS"  if args.SDFS \

@@ -17,6 +17,7 @@ import json as json_dumper
 from builtins import open as open_file
 import threading
 import time
+from plugin.PluginHooksSAFE import *
 
 # from submodules.claripy import claripy
 import claripy
@@ -270,14 +271,14 @@ class SemaSCDG:
                              ]) # TODO add frame type
         
         if not is_fl:
-            exp_dir = args.exp_dir
+            exp_dir = args.exp_dir # output directory
             nargs = args.n_args
             disjoint_union = args.disjoint_union
             not_comp_args = args.not_comp_args
             min_size = args.min_size
             not_ignore_zero = args.not_ignore_zero
             three_edges = args.three_edges
-            dir = args.dir
+            dir = args.dir # directory where the runs are stored
             verbose = args.verbose_scdg
             format_out_json = args.json # TODO refactor if we add more 
             self.discard_scdg = args.discard_SCDG
@@ -300,7 +301,7 @@ class SemaSCDG:
             
         self.log.info(args)
 
-        if exp_dir != "output/runs/"+ str(self.current_exp_dir) + "/":
+        if exp_dir != "output/runs/"+ str(self.current_exp_dir) + "/": # current_exp_dir directory corresponding to the run number
             setup = open_file("src/output/runs/"+ str(self.current_exp_dir) + "/" + "setup.txt", "w")
             setup.write(str(self.jump_it) + "\n")
             setup.write(str(self.loop_counter_concrete) + "\n")
@@ -735,7 +736,7 @@ class SemaSCDG:
             state.fs.insert("pagefile.sys", pagefile)
         
         state.options.discard("LAZY_SOLVES") 
-        if not (self.is_packed and self.unpack_mode == "symbion") or True:
+        if not (self.is_packed and self.unpack_mode == "symbion") or True: # always true
             state.register_plugin(
                 "heap", 
                 angr.state_plugins.heap.heap_ptmalloc.SimHeapPTMalloc(heap_size=0x10000000)
@@ -806,7 +807,7 @@ class SemaSCDG:
         # code at that address.
         
         if os_obj == "windows":
-            self.call_sim.loadlibs(proj) #TODO mbs=symbs,dll=dll)
+            self.call_sim.loadlibs(proj) #TODO mbs=symbs,dll=dll) # what does it do ?
         
         self.call_sim.custom_hook_static(proj)
 
@@ -818,6 +819,10 @@ class SemaSCDG:
         if args.hooks:
             self.hooks.initialization(cont, is_64bits=True if proj.arch.name == "AMD64" else False)
             self.hooks.hook(state,proj,self.call_sim)
+
+        if args.hooks_SAFE:
+            self.hooks_SAFE = PluginHooksSAFE()
+            self.hooks_SAFE.add_custom_hooks(self.inputs, proj, self.call_sim)
                 
         # Creation of simulation managerinline_call, primary interface in angr for performing execution
         
@@ -1597,11 +1602,11 @@ class SemaSCDG:
         sys.setrecursionlimit(10000)
         gc.collect()
         
-        self.inputs = "".join(self.inputs.rstrip())
+        self.inputs = "".join(self.inputs.rstrip()) # address of the executable to analyse
         self.nb_exps = 0
         self.current_exps = 0
         
-        if args.verbose_scdg:
+        if args.verbose_scdg: # if verbose set logging level to info
             logging.getLogger("SemaSCDG").handlers.clear()
             ch = logging.StreamHandler()
             ch.setLevel(logging.INFO)
@@ -1615,7 +1620,7 @@ class SemaSCDG:
         else:
             # logging.getLogger('claripy').disabled = True
             pass
-            ch = logging.StreamHandler()
+            ch = logging.StreamHandler()#never reached
             ch.setLevel(logging.INFO)
             ch.setFormatter(CustomFormatter())
             self.log = logging.getLogger("SemaSCDG")
@@ -1634,8 +1639,8 @@ class SemaSCDG:
         # soft, hard = resource.getrlimit(rsrc)
         # self.log.info('Soft limit changed to :', soft)
 
-        self.log.info(self.inputs)
-        if os.path.isfile(self.inputs):
+        self.log.info(self.inputs) #log path to executable
+        if os.path.isfile(self.inputs): #if path is a file
             self.nb_exps = 1
             # TODO update familly
             self.log.info("You decide to analyse a single binary: "+ self.inputs)
@@ -1646,7 +1651,7 @@ class SemaSCDG:
                 self.log.info(e)
                 self.log.info("Error: "+self.inputs+" is not a valid binary")
             self.current_exps = 1
-        else:
+        else: #if path is a folder
             import progressbar
             last_familiy = "unknown"
             self.log.info(self.inputs)
