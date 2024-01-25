@@ -1,34 +1,7 @@
-#!/usr/bin/env python3
-from ast import arg
-import datetime
-import os
-import sys
-from collections import defaultdict
-from typing import Optional, Set, List, Tuple, Dict, TYPE_CHECKING
-from angr.knowledge_plugins.functions import Function
-# for pypy3
-# sys.path.insert(0, '/usr/local/lib')
-# sys.path.insert(0, os.path.expanduser('~/lib'))
-# sys.path.insert(0, os.path.expanduser('/home/crochetch/Documents/toolchain_malware_analysis/penv/lib'))
-from pprint import pprint, pformat
-from collections import defaultdict
-
 import json as json_dumper
 from builtins import open as open_file
 import threading
-import time
 from plugin.PluginHooksSAFE import *
-
-# from submodules.claripy import claripy
-import claripy
-import monkeyhex  # this will format numerical results in hexadecimal
-import logging
-from capstone import *
-# from angrutils import * 
-# Syscall table stuff
-import angr
-from angr.sim_type import SimTypeInt, SimTypePointer, SimTypeArray, SimTypeChar
-
 import gc
 
 # Personnal stuf
@@ -105,22 +78,12 @@ import angr
 import claripy
 import pandas as pd
 
-import matplotlib.pyplot as plt
-import numpy as np
-
-import shutil
-
-import dill
-import nose
 import avatar2 as avatar2
 
 import r2pipe
 
 from unipacker.core import Sample, SimpleClient, UnpackerEngine
 from unipacker.utils import RepeatedTimer, InvalidPEFile
-from unipacker.unpackers import get_unpacker
-#from angr_targets import AvatarGDBConcreteTarget # TODO FIX in submodule
-
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -192,10 +155,7 @@ class SemaSCDG:
 
         # Option for exploration evalutation
         self.instr_count = {}
-                
-        #logging.getLogger("angr").setLevel("WARNING")
-        #logging.getLogger("angr").setLevel("DEBUG")
-        
+
         # create console handler with a higher log level
 
         self.call_sim = CustomSimProcedure(
@@ -229,7 +189,6 @@ class SemaSCDG:
 
     def new_instr(self, state):
         self.instr_count[state.addr] = 1
-        # import pdb; pdb.set_trace()
 
     def build_scdg(self, args, is_fl=False, csv_file=None):
         # Create directory to store SCDG if it doesn't exist
@@ -323,7 +282,6 @@ class SemaSCDG:
         
         fileHandler = logging.FileHandler(exp_dir + "/" + nameFileShort + "/" + "scdg.log")
         fileHandler.setFormatter(CustomFormatter())
-        #logging.getLogger().handlers.clear()
         try:
             logging.getLogger().removeHandler(fileHandler)
         except:
@@ -335,7 +293,6 @@ class SemaSCDG:
 
 
         exp_dir = exp_dir + "/" + nameFileShort + "/"
-        #dir = dir + "/" + nameFileShort + "/"
         self.log.info(exp_dir)
         
         title = "--- Building SCDG of " + self.familly  +"/" + nameFileShort  + " ---"
@@ -350,8 +307,7 @@ class SemaSCDG:
 
         # Load a binary into a project = control base
         proj = None
-        cuckoo = None
-        if self.is_packed and self.unpack_mode == "symbion":
+        if self.is_packed and self.unpack_mode == "symbion": #TODO : fix
             # nameFile = os.path.join(os.path.dirname(os.path.realpath(__file__)),
             #                               os.path.join('..', 'binaries',
             #                               'tests','x86_64',
@@ -502,88 +458,16 @@ class SemaSCDG:
                 self.unpack_mode = "symbion"
                 self.build_scdg(args, nameFile, self.expl_method)
                 return
-        else:  
-            # if nameFile.endswith(".bin") or nameFile.endswith(".dmp"):
-            #     main_opt = {'backend': 'blob', "arch":"x86","simos":"windows"}#cle.Blob(nameFile,arch=avatar2.archs.x86.X86,binary_stream=True)
-            #     #nameFile = loader
-            #     main_opt = {} #0x0005f227 0x400000 0x001191f7
-            #     proj = angr.Project(
-            #         nameFile,
-            #         use_sim_procedures=True,
-            #         load_options={
-            #             "auto_load_libs": True
-            #         },  # ,load_options={"auto_load_libs":False}
-            #         support_selfmodifying_code=True if not nameFile.endswith(".dmp") else False,
-            #         main_opts=main_opt,
-            #         #simos = "windows"if nameFile.endswith(".bin") or nameFile.endswith(".dmp") else None
-            #         # arch="",
-            #     )
-            #     main_obj = proj.loader.main_object
-            #     first_sec = False
-            #     libs = []
-            #     dll = []
-            #     for sec in main_obj.sections:
-            #         name = sec.name.replace("\x00", "")
-            #         if not first_sec:
-            #             first_sec = True
-            #         else:
-            #             if "KERNELBASE.dll" in name:
-            #                 name = name.replace("KERNELBASE.dll","KernelBase.dll")
-            #             dll.append(name.split("\\")[-1])
-            #             print(dll)
-            #             libs.append(name.replace("C:\\",self.call_sim.ddl_loader.calls_dir.replace("calls","windows10_ddls/C:/")).replace("\\","/")) # .replace("system","System") 
-            #             self.log.info(name)
-            #             #self.log.info(dump_file["sections"][name])
-            #     t_0x0548 = proj.loader.main_object.get_thread_registers_by_id() # 0x1b30 0x0548 0x13c4 0x1ecc 0x760
-            #     print(t_0x0548)
-            #     print(hex(t_0x0548["eip"]) )
-            #     # print(proj.loader.memory[t_0x0548["esp"]])
-            #     main_opt = {"entry_point":t_0x0548["eip"]} # "entry_point":t_0x0548["eip"]
-            #     print(main_opt)
-            #     #exit()
-            #     proj = angr.Project(
-            #         nameFile,
-            #         use_sim_procedures=True, # if not nameFile.endswith(".dmp") else False,
-            #         load_options={
-            #             "auto_load_libs": True,
-            #             "load_debug_info": True,
-            #             #"preload_libs": libs,
-            #         },  # ,load_options={"auto_load_libs":False}
-            #         support_selfmodifying_code=True, #if not nameFile.endswith(".dmp") else False,
-            #         main_opts=main_opt,
-            #         #simos = "windows"if nameFile.endswith(".bin") or nameFile.endswith(".dmp") else None
-            #         # arch="",
-            #     )
-            #     symbs = proj.loader.symbols
-            #     for symb in symbs:
-            #         print(symb)
-            #     print(symbs)
-            #     print(proj.loader.shared_objects)
-            #     print(proj.loader.all_objects)
-            #     print(proj.loader.requested_names)
-            #     print(proj.loader.initial_load_objects)
-            #     for register in t_0x0548:
-            #         print(register,hex(t_0x0548[register]))
-            #     #exit()
-                
-            # else:
-            main_opt = {}
-            libs  = []
-            symbs = None
+        else:
             dll = None
-            main_opt = {"entry_point": 0x401500} # 0x4014e0
             proj = angr.Project(
                     self.inputs,
                     use_sim_procedures=True,
                     load_options={
                         "auto_load_libs": True,
                         "load_debug_info": True,
-                        #"preload_libs": libs,
-                    },  # ,load_options={"auto_load_libs":False}
+                    },
                     support_selfmodifying_code=True,
-                    #main_opts=main_opt,
-                    #simos = "windows"if nameFile.endswith(".bin") or nameFile.endswith(".dmp") else None
-                    # arch="",
                     default_analysis_mode="symbolic" if not args.approximate else "symbolic_approximating",
             )
             symbs = proj.loader.symbols
@@ -594,11 +478,6 @@ class SemaSCDG:
             print(proj.loader.all_objects)
             print(proj.loader.requested_names)
             print(proj.loader.initial_load_objects)
-            #exit()
-            # for register in t_0x0548:
-            #     print(register,hex(t_0x0548[register]))
-            # exit()
-            #     proj.loader.memory[t_0x0548[register]] 
 
         # Getting from a binary file to its representation in a virtual address space
         main_obj = proj.loader.main_object
@@ -659,7 +538,6 @@ class SemaSCDG:
         
         # TODO : Maybe useless : Try to directly go into main (optimize some binary in windows) 
         r = r2pipe.open(self.inputs)
-        out_r2 = r.cmd('f ~sym._main')
         out_r2 = r.cmd('f ~sym._main')   
         addr_main = proj.loader.find_symbol("main")
         if addr_main and self.fast_main:
@@ -690,43 +568,20 @@ class SemaSCDG:
         # Create initial state of the binary
         if self.is_packed and self.unpack_mode == "symbion":
             options = {angr.options.SYMBION_SYNC_CLE}
-            options.add(angr.options.SYMBION_KEEP_STUBS_ON_SYNC) 
-            #options.add(angr.options.SYNC_CLE_BACKEND_CONCRETE)
+            options.add(angr.options.SYMBION_KEEP_STUBS_ON_SYNC)
         else:
-            options = {angr.options.MEMORY_CHUNK_INDIVIDUAL_READS} #{angr.options.USE_SYSTEM_TIMES} # {angr.options.SIMPLIFY_MEMORY_READS} # angr.options.ZERO_FILL_UNCONSTRAINED_REGISTERS {angr.options.SYMBOLIC_INITIAL_VALUES
-            # options.add(angr.options.EFFICIENT_STATE_MERGING)
-            # options.add(angr.options.DOWNSIZE_Z3)
+            options = {angr.options.MEMORY_CHUNK_INDIVIDUAL_READS}
             options.add(angr.options.USE_SYSTEM_TIMES)
-            # options.add(angr.options.OPTIMIZE_IR)
-            # options.add(angr.options.FAST_MEMORY)
-            # options.add(angr.options.SIMPLIFY_MEMORY_READS)
-            # options.add(angr.options.SIMPLIFY_MEMORY_WRITES)
-            # options.add(angr.options.SIMPLIFY_CONSTRAINTS)
-            # options.add(angr.options.SYMBOLIC_INITIAL_VALUES)
-            # options.add(angr.options.CPUID_SYMBOLIC)
             options.add(angr.options.ZERO_FILL_UNCONSTRAINED_REGISTERS)
             options.add(angr.options.ZERO_FILL_UNCONSTRAINED_MEMORY)
-            # options.add(angr.options.SYMBOL_FILL_UNCONSTRAINED_REGISTERS)
-            # options.add(angr.options.SYMBOL_FILL_UNCONSTRAINED_MEMORY)
-            # options.add(angr.options.MEMORY_CHUNK_INDIVIDUAL_READS)
-            # options.add(angr.options.SYMBOLIC_WRITE_ADDRESSES)
-            
-            # options.add(angr.options.UNICORN)
-            # options.add(angr.options.UNICORN_SYM_REGS_SUPPORT)
-            # options.add(angr.options.UNICORN_HANDLE_TRANSMIT_SYSCALL)
         if self.debug_error:
             pass
-            # options.add(angr.options.TRACK_JMP_ACTIONS)
-            # options.add(angr.options.TRACK_CONSTRAINT_ACTIONS)
-            # options.add(angr.options.TRACK_JMP_ACTIONS)
 
         self.log.info("Entry_state address = " + str(addr))
         # Contains a program's memory, registers, filesystem data... any "live data" that can be changed by execution has a home in the state
         state = proj.factory.entry_state(
             addr=addr, args=args_binary, add_options=options
         )
-        # import pdb
-        # pdb.set_trace()
         if args.sim_file:
             with open_file(self.inputs, "rb") as f:
                 cont = f.read()
@@ -741,11 +596,7 @@ class SemaSCDG:
                 "heap", 
                 angr.state_plugins.heap.heap_ptmalloc.SimHeapPTMalloc(heap_size=0x10000000)
             )
-            #state.libc.max_variable_size = 0x20000000*2 + 0x18000000
-            #state.libc.max_memcpy_size   = 0x20000000*2
 
-
-        
         state.register_plugin("plugin_env_var", PluginEnvVar()) 
         state.plugin_env_var.setup_plugin(self.expl_method)
                     
@@ -785,7 +636,6 @@ class SemaSCDG:
         # Constraint arguments to ASCII
         for i in range(1, len(args_binary)):
            for byte in args_binary[i].chop(8):
-               # state.add_constraints(byte != '\x00') # null
                state.add_constraints(byte >= " ")  # '\x20'
                state.add_constraints(byte <= "~")  # '\x7e'
 
@@ -918,247 +768,34 @@ class SemaSCDG:
         if self.is_packed and self.unpack_mode == "symbion":   
             self.log.info("Concolic unpacking process with Symbion")
             
-            # cuckoo.start_analysis()            
-            # cuckoo.stop_sandbox() 
-            # unpack_add = cuckoo.get_address("UNPACK_ADDRESS")
-
-            # unpack_add = 0x8048879
-            # self.log.info("execute concretly")
-            # new_concrete_state = self.execute_concretly(proj, state, unpack_add, [])
-            # for i in range(0,4): # 5
-            #     new_concrete_state = self.execute_concretly(proj, state, unpack_add, [])
-            # simgr = proj.factory.simgr(new_concrete_state)
-            
-            # not_packed
-            # STARTING_DECISION_ADDRESS = 0x401775
-            # DROP_V1 = 0x401807
-            # DROP_V2 = 0x401839
-            # MALWARE_EXECUTION_END = 0x401879
-            # FAKE_CC = 0x401861
-            # VENV_DETECTED = 0x401847
-
-            # self.log.info("[1]Executing malware concretely until address: " + hex(STARTING_DECISION_ADDRESS))
-            # state = self.execute_concretly(proj, state, STARTING_DECISION_ADDRESS, [])
-
-            # # declaring symbolic buffer
-            # arg0 = claripy.BVS('arg0', 8 * 32)
-            # symbolic_buffer_address = state.regs.esp + 0x18
-            # state.memory.store(state.solver.eval(symbolic_buffer_address), arg0)
-
-            # self.log.info("[2]Symbolically executing malware to find dropping of second stage [ address:  " + hex(DROP_V1) + " ]")
-            # proj.use_sim_procedures = True
-            # proj.concrete_target = None
-            # proj.factory.concrete_engine = None
-            #exit(0)
-            # proj = angr.Project(
-            #     nameFile,
-            #     use_sim_procedures=True,
-            #     load_options={
-            #         "auto_load_libs": True
-            #     },  # ,load_options={"auto_load_libs":False}
-            #     support_selfmodifying_code=True,
-            #     # arch="",
-            # )
-            # args_binary = [nameFileShort]
-            # if args.n_args:
-            #     for i in range(args.n_args):
-            #         args_binary.append(claripy.BVS("arg" + str(i), 8 * 16))
-
-            # # Load pre-defined syscall table
-            # if os_obj == "windows":
-            #     self.call_sim.system_call_table = self.call_sim.ddl_loader.load(proj)
-            # else:
-            #     self.call_sim.system_call_table = self.call_sim.linux_loader.load_table(
-            #         proj
-            #     )
-
-            # # TODO : Maybe useless : Try to directly go into main (optimize some binary in windows)
-            # addr_main = proj.loader.find_symbol("main")
-            # if addr_main and self.fast_main:
-            #     addr = addr_main.rebased_addr
-            # else:
-            #     addr = None
-
-            # # Create initial state of the binary
-            # # options = {angr.options.USE_SYSTEM_TIMES}
-            # options = {angr.options.SIMPLIFY_MEMORY_READS}
-            # options.add(angr.options.ZERO_FILL_UNCONSTRAINED_REGISTERS)
-            # options.add(angr.options.USE_SYSTEM_TIMES)
-            # options.add(angr.options.ZERO_FILL_UNCONSTRAINED_MEMORY)
-            # options.add(angr.options.SIMPLIFY_MEMORY_READS)
-            # options.add(angr.options.SIMPLIFY_MEMORY_WRITES)
-            # options.add(angr.options.SIMPLIFY_CONSTRAINTS)
-            # # options.add(angr.options.SYMBOLIC_WRITE_ADDRESSES)
-            # options.add(angr.options.SYMBOLIC_INITIAL_VALUES)
-            
-            # new_concrete_state.options = options
-            
-            # new_concrete_state.options.discard("LAZY_SOLVES")
-            # # For environment variable mainly
-            # new_concrete_state.register_plugin( 
-            #     "plugin_env_var", PluginEnvVar()
-            # )  
-            # new_concrete_state.register_plugin(
-            #         "heap", angr.state_plugins.heap.heap_ptmalloc.SimHeapPTMalloc() # heap_size=0x1000000
-            #     )
-            #     # Memory block to store environment variable
-            # new_concrete_state.plugin_env_var.env_block = new_concrete_state.heap.malloc(32767)
-            # for i in range(32767):
-            #     c = new_concrete_state.solver.BVS("c_env_block{}".format(i), 8)
-            #     new_concrete_state.memory.store(new_concrete_state.plugin_env_var.env_block + i, c)
-            
-            # if os_obj == "windows" :
-            #     ComSpec = "ComSpec=C:\Windows\system32\cmd.exe\0".encode("utf-8")
-            #     ComSpec_bv = new_concrete_state.solver.BVV(ComSpec)
-            #     new_concrete_state.memory.store(new_concrete_state.plugin_env_var.env_block, ComSpec_bv)
-            #     new_concrete_state.plugin_env_var.env_var["COMSPEC"] = "C:\Windows\system32\cmd.exe\0"
-            # new_concrete_state.plugin_env_var.expl_method = expl_method
-            
-            # if os_obj == "windows":
-            #     self.call_sim.loadlibs(proj)
-            
-            # self.call_sim.custom_hook_static(proj)
-
-            # if os_obj != "windows":
-            #     self.call_sim.custom_hook_no_symbols(proj)
-            # else:
-            #     # pass
-            #     self.call_sim.custom_hook_windows_symbols(proj)
-            
-            # simgr = proj.factory.simulation_manager(new_concrete_state)
-            
-            # new_concrete_state.inspect.b("simprocedure", when=angr.BP_AFTER, action=self.call_sim.add_call)
-            # new_concrete_state.inspect.b("simprocedure", when=angr.BP_BEFORE, action=self.call_sim.add_call_debug)
-            # new_concrete_state.inspect.b("call", when=angr.BP_BEFORE, action=self.call_sim.add_addr_call)
-            # new_concrete_state.inspect.b("call", when=angr.BP_AFTER, action=self.call_sim.rm_addr_call)
-            # # exploration = simgr.explore(find=DROP_V1, avoid=[FAKE_CC, DROP_V2, VENV_DETECTED])
-            # # self.log.info("CACA")
-            # # new_symbolic_state = exploration.stashes['found'][0]
-
-            # self.log.info("[3]Executing malware concretely with solution found until the end " + hex(MALWARE_EXECUTION_END))
-            # self.execute_concretly(proj, new_symbolic_state, MALWARE_EXECUTION_END, [(symbolic_buffer_address, arg0)], [])
-            # print("[4]Malware execution ends, the configuration value is: " + hex(
-            #    new_symbolic_state.solver.eval(arg0, cast_to=int)))
-            
             #packed
             UNPACKING_FINISHED = 0x41EA02 # 0x41EA02 # 0x41EA02 #0x41EA02 0x41e930 0x40162c
             STARTING_DECISION_ADDRESS = 0x401775 #0x41e930 #0x401775 #  proj.entry # 0x41e930
-            DROP_V1 = 0x401807
-            DROP_V2 = 0x401839
-            MALWARE_EXECUTION_END = 0x401879
-            FAKE_CC = 0x401861
-            VENV_DETECTED = 0x401847
-            # self.log.info("[1]Let get program symbols")
-            # print(avatar_gdb.avatar.get_info_function_targets())
             self.log.info("[0]Let the malware unpack itself")
             state = self.execute_concretly(proj, state, UNPACKING_FINISHED)
-            # # print("cac  a")
             print(dump_file["sections"]["UPX1"])
-            #exit()
-            #self.log.info("[1]Let get program symbols")
             print(proj.concrete_target.avatar.get_info_sharelib_targets(local_ddl_path))
-            # print(proj.concrete_target.avatar.get_info_reg_targets())
             print(proj.concrete_target.get_mappings())
             print(proj.concrete_target.get_heap_address())
-            #exit(0)
             self.log.info("[1]Executing malware concretely until address: " + hex(STARTING_DECISION_ADDRESS))
             state = self.execute_concretly(proj, state, STARTING_DECISION_ADDRESS, [])
             print(proj.concrete_target.save_dump(dump_file["sections"]["UPX1"]["vaddr"],dump_file["sections"]["UPX1"]["vaddr"]+dump_file["sections"]["UPX1"]["memsize"]))
-            #self.log.info("[1]Let get program symbols")
-            # print(proj.concrete_target.avatar.get_info_function_targets())
-            # print(proj.concrete_target.avatar.get_info_reg_targets())
             mapps = proj.concrete_target.get_mappings()
             for map in mapps:
                 print(map)
             print(proj.loader.main_object.threads)
-            #exit(0)
             state.concrete.sync()
             state.concrete = None
-            #exit(0)
             proj.concrete_target = None
             proj.loader.concrete = None
             proj.factory.concrete_engine = None
-            # reass = proj.analyses.Reassembler()
-            # reass.symbolize()
-            #exit(0)
-            # # # # # # declaring symbolic buffer
-            # arg0 = claripy.BVS('arg0', 8 * 32)
-            # symbolic_buffer_address = state.regs.esp + 0x18
-            # state.memory.store(state.solver.eval(symbolic_buffer_address), arg0)
-            
-            # args_binary = [nameFileShort]
-            # if args.n_args:
-            #     for i in range(args.n_args):
-            #         args_binary.append(claripy.BVS("arg" + str(i), 8 * 16))
-            
-            # for i in range(1, len(args_binary)):
-            #     for byte in args_binary[i].chop(8):
-            #         # state.add_constraints(byte != '\x00') # null
-            #         state.add_constraints(byte >= " ")  # '\x20'
-            #         state.add_constraints(byte <= "~")  # '\x7e'
 
-            #.log.info("[2]Symbolically executing malware to find dropping of second stage [ address:  " + hex(DROP_V1) + " ] [" + hex(state.addr) + " ]")
-            # # proj.use_sim_procedures = True
-            # # #exit(0)
-            # state = proj.factory.entry_state(
-            #     addr=UNPACKING_FINISHED, args=args_binary, add_options=options
-            # )
-            
-            # proj.use_sim_procedures = False
-            # proj.loader = cle.Loader(proj.filename, concrete_target=None, **{
-            #             "auto_load_libs": True
-            # })
-            #proj.loader.concrete = None
-            
-            # state.options.discard(angr.options.SYMBION_SYNC_CLE)
-            # state.options.discard(angr.options.SYMBION_KEEP_STUBS_ON_SYNC)
-            
-            # proj.loader.main_object = None
-            # proj.entry = UNPACKING_FINISHED
-            # proj.simos.configure_project()
-            # dump_file = {}
-            # main_obj = proj.loader.main_object
-            # os_obj = main_obj.os
-            # self.print_memory_info(main_obj, dump_file)
-            
-            # # Load pre-defined syscall table
-            # if os_obj == "windows":
-            #     self.call_sim.system_call_table = self.call_sim.ddl_loader.load(proj)
-            # else:
-            #     self.call_sim.system_call_table = self.call_sim.linux_loader.load_table(proj)
-            
-            # if os_obj == "windows":
-            #     self.call_sim.loadlibs(proj)
-            
-            # self.call_sim.custom_hook_static(proj)
-
-            # if os_obj != "windows":
-            #     self.call_sim.custom_hook_no_symbols(proj)
-            # else:
-            #     # pass
-            #     self.call_sim.custom_hook_windows_symbols(proj)
-                
-            #simgr = proj.factory.simulation_manager(state1)
             simgr = proj.factory.simgr(state)
-            
-            # simgr._techniques = []
-            # simgr.active.pop()
-            # #print(state1)
-            #simgr.active.append(state2)
-            
-            # dump_file = {}
-            # self.print_memory_info(main_obj, dump_file)
             
             state.inspect.b("simprocedure", when=angr.BP_AFTER, action=self.call_sim.add_call)
             state.inspect.b("simprocedure", when=angr.BP_BEFORE, action=self.call_sim.add_call_debug)
             state.inspect.b("call", when=angr.BP_BEFORE, action=self.call_sim.add_addr_call)
             state.inspect.b("call", when=angr.BP_AFTER, action=self.call_sim.rm_addr_call)
-            # # simgr.use_technique(exploration_tech)
-            # exploration = simgr.explore(find=DROP_V1, avoid=[FAKE_CC, DROP_V2, VENV_DETECTED])
-            # state = exploration.stashes['found'][0]
-            
-            #simgr = proj.factory.simgr(state)
-              # Improved "Break point"
 
             simgr.active[0].globals["id"] = 0
             simgr.active[0].globals["JumpExcedeed"] = False
@@ -1170,10 +807,6 @@ class SemaSCDG:
             simgr.active[0].globals["addr_call"] = []
             print(simgr)
             print(state)
-            #exit(0)
-
-            #self.log.info("[3]Executing malware concretely with solution found until the end " + hex(MALWARE_EXECUTION_END))
-            #self.execute_concretly(proj, new_symbolic_state, MALWARE_EXECUTION_END, [(symbolic_buffer_address, arg0)], [])
 
         self.scdg.append(
             [
@@ -1293,36 +926,6 @@ class SemaSCDG:
             familly=self.familly
         )
         g.build_graph(self.scdg_fin, format_out_json=format_out_json)
-        
-        #if csv_file:
-            # df = df.append({"familly":self.familly,
-            #                 "filename": nameFileShort, 
-            #                  "time": elapsed_time,
-            #                  "date":datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                             
-            #                  "Syscall found": json.dumps(self.call_sim.syscall_found), 
-            #                  "EnvVar found": json.dumps(total_env_var), 
-            #                  "Locale found": json.dumps(total_locale), 
-            #                  "Resources found": json.dumps(total_res), 
-            #                  "Registry found": json.dumps(total_registery), 
-                             
-            #                  "Number Address found": 0, 
-            #                  "Number Syscall found": len(self.call_sim.syscall_found), 
-            #                  "Libraries":str(proj.loader.requested_names),
-            #                  "OS": proj.loader.main_object.os,
-            #                  "CPU architecture": proj.loader.main_object.arch.name,
-            #                  "Entry point": proj.loader.main_object.entry,
-            #                  "Min/Max addresses": str(proj.loader.main_object.mapped_base) + "/" + str(proj.loader.main_object.max_addr),
-            #                  "Stack executable": proj.loader.main_object.execstack,
-            #                  "Binary position-independent:": proj.loader.main_object.pic,
-            #                  "Total number of blocks": nbblocks,
-            #                  "Total number of instr": nbinstr,
-            #                  "Number of blocks visited": len(block_dict),
-            #                  "Number of instr visited": len(instr_dict),
-            #                 }, 
-            #                ignore_index=True)
-            # self.log.info(csv_file)
-            # df.to_csv(csv_file, index=False,sep=";")
         logging.getLogger().removeHandler(fileHandler)
 
     def get_exploration_tech(self, args, exp_dir, nameFileShort, simgr):
@@ -1362,32 +965,26 @@ class SemaSCDG:
                 simgr, 0, args.exp_dir, nameFileShort, self
             )
         elif self.expl_method == "CSTOCH1":
-            # import pdb; pdb.set_trace()
             exploration_tech = SemaExplorerCSTOCH1(
                 simgr, 0, args.exp_dir, nameFileShort, self
             )
         elif self.expl_method == "CSTOCH2":
-            # import pdb; pdb.set_trace()
             exploration_tech = SemaExplorerCSTOCH2(
                 simgr, 0, args.exp_dir, nameFileShort, self
             )
         elif self.expl_method == "CSTOCH3":
-            # import pdb; pdb.set_trace()
             exploration_tech = SemaExplorerCSTOCH3(
                 simgr, 0, args.exp_dir, nameFileShort, self
             )
         elif self.expl_method == "WSELECT1":
-            # import pdb; pdb.set_trace()
             exploration_tech = SemaExplorerWSELECT1(
                 simgr, 0, args.exp_dir, nameFileShort, self
             )
         elif self.expl_method == "WSELECT2":
-            # import pdb; pdb.set_trace()
             exploration_tech = SemaExplorerWSELECT2(
                 simgr, 0, args.exp_dir, nameFileShort, self
             )
         elif self.expl_method == "WSELECT3":
-            # import pdb; pdb.set_trace()
             exploration_tech = SemaExplorerWSELECT3(
                 simgr, 0, args.exp_dir, nameFileShort, self
             )
@@ -1434,7 +1031,7 @@ class SemaSCDG:
         tsimgr.active[0].globals["allow_web_interaction"] = False
         
 
-    def build_scdg_fin(self, exp_dir, nameFileShort, main_obj, state, simgr):
+    def build_scdg_fin(self, exp_dir, nameFileShort, main_obj, state, simgr): #TODO : change signature
         dump_file = {}
         dump_id = 0
         dic_hash_SCDG = {}
@@ -1552,7 +1149,6 @@ class SemaSCDG:
         self.print_memory_info(main_obj, dump_file)
         
         if self.discard_scdg:
-            # self.log.info(dump_file)
             ofilename = exp_dir  + "inter_SCDG.json"
             self.log.info(ofilename)
             list_obj = []
@@ -1563,7 +1159,7 @@ class SemaSCDG:
                     list_obj = json_dumper.load(fp)
             save_SCDG = open_file(ofilename, "w")
             list_obj.append(dump_file)
-            json_dumper.dump(list_obj, save_SCDG)  # ,indent=4)
+            json_dumper.dump(list_obj, save_SCDG)
             save_SCDG.close()
     
     def execute_concretly(
@@ -1617,27 +1213,6 @@ class SemaSCDG:
             logging.getLogger("angr").setLevel("INFO")
             logging.getLogger('claripy').setLevel('INFO')
             self.log.setLevel(logging.INFO)
-        else:
-            # logging.getLogger('claripy').disabled = True
-            pass
-            ch = logging.StreamHandler()#never reached
-            ch.setLevel(logging.INFO)
-            ch.setFormatter(CustomFormatter())
-            self.log = logging.getLogger("SemaSCDG")
-            self.log.addHandler(ch)
-            self.log.propagate = False
-            self.log.setLevel(logging.INFO)
-        
-        # import resource
-
-        # rsrc = resource.RLIMIT_DATA
-        # soft, hard = resource.getrlimit(rsrc)
-        # self.log.info('Soft limit starts as  :', soft)
-
-        # resource.setrlimit(rsrc, (1024*1024*1024*10, hard)) #limit to 10 gigabyte
-
-        # soft, hard = resource.getrlimit(rsrc)
-        # self.log.info('Soft limit changed to :', soft)
 
         self.log.info(self.inputs) #log path to executable
         if os.path.isfile(self.inputs): #if path is a file
@@ -1681,11 +1256,7 @@ class SemaSCDG:
                     for file in files:
                         self.inputs = file
                         self.familly = current_family
-                        #try:
                         self.build_scdg(args, is_fl, csv_file=csv_file)
-                        # except Exception as e:
-                        #     self.log.info(e)
-                        #     self.log.info("Error: "+file+" is not a valid binary")
                         fc+=1
                         self.current_exps += 1
                         bar.update(fc)
@@ -1697,7 +1268,6 @@ class SemaSCDG:
                 bar_f.finish()
             else:
                 self.log.info("Error: you should insert a folder containing malware classified in their family folders\n(Example: databases/malware-inputs/Sample_paper")
-                # exit(-1)
 
 
 def main():
