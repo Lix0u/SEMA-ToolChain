@@ -1,7 +1,7 @@
 import json as json_dumper
 from builtins import open as open_file
 import threading
-from plugin.PluginHooksSAFE import *
+from plugin.PluginHooksSAFE2 import *
 import gc
 
 # Personnal stuf
@@ -639,17 +639,6 @@ class SemaSCDG:
                state.add_constraints(byte >= " ")  # '\x20'
                state.add_constraints(byte <= "~")  # '\x7e'
 
-        # Creation of file with concrete content for cleanware
-        # TODO WORK in Progress, need to think about automation of the process (like an argument with file name to create)
-        if False:
-            clean_files = ["share/file/magic.mgc"]
-            for n in clean_files:
-                f = open_file("malware-inputs/clean/" + n, "rb")
-                cont = f.read()
-                simfile = angr.SimFile(n, content=cont)
-                f.close()
-                simfile.set_state(state)
-
         #### Custom Hooking ####
         # Mechanism by which angr replaces library code with a python summary
         # When performing simulation, at every step angr checks if the current
@@ -657,7 +646,7 @@ class SemaSCDG:
         # code at that address.
         
         if os_obj == "windows":
-            self.call_sim.loadlibs(proj) #TODO mbs=symbs,dll=dll) # what does it do ?
+            self.call_sim.loadlibs(proj) #TODO mbs=symbs,dll=dll)
         
         self.call_sim.custom_hook_static(proj)
 
@@ -671,8 +660,7 @@ class SemaSCDG:
             self.hooks.hook(state,proj,self.call_sim)
 
         if args.hooks_SAFE:
-            self.hooks_SAFE = PluginHooksSAFE()
-            self.hooks_SAFE.add_custom_hooks(self.inputs, proj, self.call_sim)
+            self.SAFE.compare_exe(args.binary, proj, self.call_sim)
                 
         # Creation of simulation managerinline_call, primary interface in angr for performing execution
         
@@ -1201,7 +1189,14 @@ class SemaSCDG:
         self.inputs = "".join(self.inputs.rstrip()) # address of the executable to analyse
         self.nb_exps = 0
         self.current_exps = 0
-        
+
+        if args.hooks_SAFE:
+            self.SAFE = SAFE("src/SemaSCDG/plugin/SAFE/safe.pb")
+            #check if we already have the embeddings of the functions of the binary
+            if args.binary.split("/")[-1] not in self.SAFE.get_processed_binaries():
+                self.SAFE.embedd_executable(args.binary) #TODO: add threshold?
+                print ("Embeddings of the binary have been computed")
+
         if args.verbose_scdg: # if verbose set logging level to info
             logging.getLogger("SemaSCDG").handlers.clear()
             ch = logging.StreamHandler()

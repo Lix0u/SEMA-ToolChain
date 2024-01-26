@@ -190,6 +190,7 @@ class RadareFunctionAnalyzer:
                     "filtered_instructions": instructions,
                     "asm": asm,
                     "address": address,
+                    "length": my_function["size"],
                 }
             except:
                 print(
