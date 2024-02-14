@@ -5,6 +5,16 @@ try:
     from .SAFE.SAFEEmbedder import SAFEEmbedder
     from .SAFE.db_manager import JsonManager
 except:
+    print("Importing from src")
+    # print the current working directory
+    import os
+    print(os.getcwd())
+    import sys
+    sys.path.append(os.getcwd())
+    print(sys.path)
+    #import the classes from the src folder
+
+
     from src.SemaSCDG.plugin.SAFE.FunctionAnalyzerRadare import RadareFunctionAnalyzer
     from src.SemaSCDG.plugin.SAFE.FunctionNormalizer import FunctionNormalizer
     from src.SemaSCDG.plugin.SAFE.InstructionsConverter import InstructionsConverter
@@ -105,6 +115,26 @@ class SAFE:
                     "len": functions[function]["length"],
                 }
             self.db_executable.add(filename.split("/")[-1], embeddings)
+
+    def get_embeddings(self, filename):
+        analyzer = RadareFunctionAnalyzer(filename, use_symbol=False, depth=0)
+        functions = analyzer.analyze()
+        embeddings = {}
+        for function in functions:
+            instructions_list = functions[function]["filtered_instructions"]
+            converted_instructions = self.converter.convert_to_ids(
+                instructions_list
+            )
+            instructions, length = self.normalizer.normalize_functions(
+                [converted_instructions]
+            )
+            embedding = self.embedder.embedd(instructions, length)
+            # use the function address in hexadecimal to easily find the function if needed
+            embeddings[hex(functions[function]["address"])] = {
+                "embedding": embedding.tolist(),
+                "address": functions[function]["address"]
+            }
+        return embeddings
 
     def get_processed_binaries(self):
         return self.db_executable.get_all_names()
