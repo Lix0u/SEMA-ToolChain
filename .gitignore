@@ -17,6 +17,7 @@ upx-dataset/
 .idea/
 build/
 dist/
+output/
 toolchain-malware-analysis.rep
 .unpacker_history
 toolchain-malware-analysis.gpr
