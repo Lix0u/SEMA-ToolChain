@@ -1,5 +1,5 @@
 {
-    "mumurhash1": {
+    "murmurhash_6e1475_0x415b64": {
         "embedding": [
             [
                 0.13622385263442993,
@@ -105,6 +105,6 @@
             ]
         ],
         "customSimProc": "MurmurHashHook",
-        "threshold": 0.95
+        "threshold": 0.9
     }
 }

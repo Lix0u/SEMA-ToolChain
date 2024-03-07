@@ -3,7 +3,8 @@
 
 import json
 import r2pipe
-
+import os
+import sys
 
 class RadareFunctionAnalyzer:
     def __init__(self, filename, use_symbol, depth):
@@ -191,6 +192,7 @@ class RadareFunctionAnalyzer:
                     "asm": asm,
                     "address": address,
                     "length": my_function["size"],
+                    "last_instr":instructions[-1]
                 }
             except:
                 print(

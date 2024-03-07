@@ -4,23 +4,19 @@ try:
     from .SAFE.InstructionsConverter import InstructionsConverter
     from .SAFE.SAFEEmbedder import SAFEEmbedder
     from .SAFE.db_manager import JsonManager
+    from .SAFE.threshold import find_threshold
 except:
-    print("Importing from src")
-    # print the current working directory
     import os
-    print(os.getcwd())
     import sys
     sys.path.append(os.getcwd())
-    print(sys.path)
     #import the classes from the src folder
-
-
-    from src.SemaSCDG.plugin.SAFE.FunctionAnalyzerRadare import RadareFunctionAnalyzer
-    from src.SemaSCDG.plugin.SAFE.FunctionNormalizer import FunctionNormalizer
-    from src.SemaSCDG.plugin.SAFE.InstructionsConverter import InstructionsConverter
-    from src.SemaSCDG.plugin.SAFE.SAFEEmbedder import SAFEEmbedder
-    from src.SemaSCDG.plugin.SAFE.db_manager import JsonManager
-from argparse import ArgumentParser
+    from SAFE.FunctionAnalyzerRadare import RadareFunctionAnalyzer
+    from SAFE.FunctionNormalizer import FunctionNormalizer
+    from SAFE.InstructionsConverter import InstructionsConverter
+    from SAFE.SAFEEmbedder import SAFEEmbedder
+    from SAFE.db_manager import JsonManager
+    from SAFE.threshold import find_threshold
+from argparse import ArgumentParser, BooleanOptionalAction
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from time import sleep
@@ -80,13 +76,29 @@ class SAFE:
                             self.db_functions.get(function_db)["customSimProc"]
                             is not None
                         ):
-                            project.hook(
-                                db_exe[function_exe]["address"],
-                                call_sim.custom_simproc_windows["custom_hook"][
-                                    self.db_functions.get(function_db)["customSimProc"]
-                                ](plength=db_exe[function_exe]["len"]),
-                                length=db_exe[function_exe]["len"],
-                            )
+                            # if last byte is 0xc3 (ret) then we need to remove it
+                            # with open(filename, "rb") as f:
+                            #     #read byte at the end of the function
+                            #     f.seek(db_exe[function_exe]["address"] + db_exe[function_exe]["len"]-1)
+                            #     last_byte = f.read(1)
+                            if db_exe[function_exe]["last_instr"] == "X_ret":
+                                print(db_exe[function_exe]["len"]-1)
+                                project.hook(
+                                    db_exe[function_exe]["address"],
+                                    call_sim.custom_simproc_windows["custom_hook"][
+                                        self.db_functions.get(function_db)["customSimProc"]
+                                    ](plength=db_exe[function_exe]["len"]-1),
+                                    length=db_exe[function_exe]["len"]-1,
+                                )
+                            else:
+                                print(db_exe[function_exe]["len"])
+                                project.hook(
+                                    db_exe[function_exe]["address"],
+                                    call_sim.custom_simproc_windows["custom_hook"][
+                                        self.db_functions.get(function_db)["customSimProc"]
+                                    ](plength=db_exe[function_exe]["len"]),
+                                    length=db_exe[function_exe]["len"],
+                                )
 
     """
         add the embeddings of all the functions of the executable to the database
@@ -113,6 +125,7 @@ class SAFE:
                     "embedding": embedding.tolist(),
                     "address": functions[function]["address"],
                     "len": functions[function]["length"],
+                    "last_instr": functions[function]["last_instr"],
                 }
             self.db_executable.add(filename.split("/")[-1], embeddings)
 
@@ -132,7 +145,7 @@ class SAFE:
             # use the function address in hexadecimal to easily find the function if needed
             embeddings[hex(functions[function]["address"])] = {
                 "embedding": embedding.tolist(),
-                "address": functions[function]["address"]
+                "address": functions[function]["address"],
             }
         return embeddings
 
@@ -143,7 +156,6 @@ class SAFE:
 if __name__ == "__main__":
     # add the target fuction to the database
     # run from src folder
-    safe = SAFE("src/SemaSCDG/plugin/SAFE/safe.pb")
 
     parser = ArgumentParser(description="Add a function to the database")
     parser.add_argument(
@@ -166,15 +178,16 @@ if __name__ == "__main__":
         dest="threshold",
         required=False,
         default=0.95,
-        help="Threshold of the function to embedd",
+        help="Manually set the threshold for the function to be considered similar to another one",
     )
     parser.add_argument(
-        "-c",
-        "--customSimProc",
-        dest="customSimProc",
-        required=True,
-        help="Custom procedure associated with the function to embedd",
-    )
+        "-T",
+        "--autoThreshold",
+        dest="autoThreshold",
+        action= BooleanOptionalAction,
+        default=False,
+        help="Automatically set the threshold for the function to be considered similar to another one (requires -F)",
+    )    
     parser.add_argument(
         "-n",
         "--name",
@@ -182,10 +195,47 @@ if __name__ == "__main__":
         required=True,
         help="Name of the function to add to the database or to compare",
     )
+    parser.add_argument(
+        "-c",
+        "--customSimProc",
+        dest="customSimProc",
+        required=True,
+        help="Custom similarity procedure to use if the function is similar to another one",
+    )
+    args, unknown = parser.parse_known_args()
+    if args.autoThreshold: #TODO: fix help message
+        parser.add_argument(
+            "-F",
+            "--folders",
+            dest="folders",
+            nargs="+",
+            required=True,
+            help="Folders containing the binaries of the same family",
+        )
+        parser.add_argument(
+            "-o",
+            "--outputFile",
+            dest="outputFile",
+            required=False,
+            default="thresholds.json",
+            help="Output file to save the threshold computation",
+        )
+        parser.add_argument(
+            "-d",
+            "--debug",
+            dest="debug",
+            action= BooleanOptionalAction,
+            default=False,
+            help="Print debug information",
+        )
+    
     args = parser.parse_args()
 
+    safe = SAFE("src/SemaSCDG/plugin/SAFE/safe.pb")
+    
     embbedding = safe.embedd_function(args.file, int(args.address, 16))
-
+    if args.autoThreshold:
+        args.threshold = find_threshold(safe, args.folders, args.file, int(args.address,16), args.outputFile, args.debug)
     safe.db_functions.add(
         args.name,
         {
