@@ -14,7 +14,7 @@ except:
     from SAFE.FunctionNormalizer import FunctionNormalizer
     from SAFE.InstructionsConverter import InstructionsConverter
     from SAFE.SAFEEmbedder import SAFEEmbedder
-    from SAFE.db_manager import JsonManager
+    from SAFE.find_function.manage_db.db_manager import JsonManager
     from SAFE.threshold import find_threshold
 from argparse import ArgumentParser, BooleanOptionalAction
 import numpy as np
