@@ -194,12 +194,12 @@ class RadareFunctionAnalyzer:
                     "length": my_function["size"],
                     "last_instr":instructions[-1]
                 }
-            except:
-                print(
-                    "Error in functions: {} from {}".format(
-                        my_function["name"], self.filename
-                    )
-                )
+            except: # sometimes radare2 flag as function a non-function
+                # print(
+                #     "Error in functions: {} from {}".format(
+                #         my_function["name"], self.filename
+                #     )
+                # )
                 pass
         return result
 

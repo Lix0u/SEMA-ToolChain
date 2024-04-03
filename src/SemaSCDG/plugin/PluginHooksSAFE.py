@@ -17,7 +17,7 @@ class PluginHooksSAFE:
         self.embedder.loadmodel()
         self.embedder.get_tensor()
 
-    def embedd_function(self, filename, address):
+    def embed_function(self, filename, address):
         analyzer = RadareFunctionAnalyzer(filename, use_symbol=False, depth=0)
         functions = analyzer.analyze()
         instructions_list = None
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     safe = PluginHooksSAFE()
 
-    embedding = safe.embedd_function(args.file, args.address)
+    embedding = safe.embed_function(args.file, args.address)
     if embedding is None:
         print("Function not found")
         sys.exit(1)

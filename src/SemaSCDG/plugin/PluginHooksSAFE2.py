@@ -14,12 +14,15 @@ except:
     from SAFE.FunctionNormalizer import FunctionNormalizer
     from SAFE.InstructionsConverter import InstructionsConverter
     from SAFE.SAFEEmbedder import SAFEEmbedder
-    from SAFE.find_function.manage_db.db_manager import JsonManager
+    from SAFE.db_manager import JsonManager
     from SAFE.threshold import find_threshold
 from argparse import ArgumentParser, BooleanOptionalAction
+from matplotlib.pylab import f
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from time import sleep
+import os
+import psutil
 
 
 class SAFE:
@@ -33,14 +36,21 @@ class SAFE:
         self.embedder.get_tensor()
         self.db_executable = JsonManager("src/SemaSCDG/plugin/SAFE/db_exe.json")
         self.db_functions = JsonManager("src/SemaSCDG/plugin/SAFE/db_func.json")
+        
+    def kill_radare_process(self):
+        for proc in psutil.process_iter():
+            if proc.name() == "radare2" and proc.ppid() == os.getpid():
+                proc.kill()
 
     """
         returns the embedding vector of a function
     """
-
-    def embedd_function(self, filename, address):
+    def embed_function(self, filename, address):
+        if isinstance(address, str):
+            address = int(address, 16)
         analyzer = RadareFunctionAnalyzer(filename, use_symbol=False, depth=0)
         functions = analyzer.analyze()
+        self.kill_radare_process()
         instructions_list = None
         for function in functions:
             if functions[function]["address"] == address:
@@ -65,10 +75,10 @@ class SAFE:
                         np.array(db_exe[function_exe]["embedding"]),
                         np.array(self.db_functions.get(function_db)["embedding"]),
                     )
-                    if sim > self.db_functions.get(function_db)["threshold"]:
+                    if round(sim[0][0],3) >= float(self.db_functions.get(function_db)["threshold"]):
                         print("\n\n\n\n\n\n\n\n\n\n\n")
                         print(
-                            "Function " + function_db + " is similar to " + function_exe
+                            "Function " + function_db + " is similar to " + function_exe + " with a similarity of " + str(sim)
                         )
                         print("\n\n\n\n\n\n\n\n\n\n\n")
                         sleep(3)
@@ -99,6 +109,10 @@ class SAFE:
                                     ](plength=db_exe[function_exe]["len"]),
                                     length=db_exe[function_exe]["len"],
                                 )
+                        break
+        else:
+            print("Executable not found in the database")
+            # TODO: add the executable to the database
 
     """
         add the embeddings of all the functions of the executable to the database
@@ -110,6 +124,7 @@ class SAFE:
         else:
             analyzer = RadareFunctionAnalyzer(filename, use_symbol=False, depth=0)
             functions = analyzer.analyze()
+            self.kill_radare_process()
             embeddings = {}
             for function in functions:
                 instructions_list = functions[function]["filtered_instructions"]
@@ -132,6 +147,7 @@ class SAFE:
     def get_embeddings(self, filename):
         analyzer = RadareFunctionAnalyzer(filename, use_symbol=False, depth=0)
         functions = analyzer.analyze()
+        self.kill_radare_process()
         embeddings = {}
         for function in functions:
             instructions_list = functions[function]["filtered_instructions"]
@@ -151,6 +167,42 @@ class SAFE:
 
     def get_processed_binaries(self):
         return self.db_executable.get_all_names()
+    
+    def get_functions_similar_to_db(self,filename):
+        if filename.split("/")[-1] in self.db_executable.get_all_names():
+            exe = self.db_executable.get(filename.split("/")[-1])
+        else:
+            analyzer = RadareFunctionAnalyzer(filename, use_symbol=False, depth=0)
+            functions = analyzer.analyze()
+            self.kill_radare_process()
+            exe = {}
+            for function in functions:
+                instructions_list = functions[function]["filtered_instructions"]
+                converted_instructions = self.converter.convert_to_ids(
+                    instructions_list
+                )
+                instructions, length = self.normalizer.normalize_functions(
+                    [converted_instructions]
+                )
+                embedding = self.embedder.embedd(instructions, length)
+                # use the function address in hexadecimal to easily find the function if needed
+                exe[hex(functions[function]["address"])] = {
+                    "embedding": embedding.tolist(),
+                    "address": functions[function]["address"],
+                    "len": functions[function]["length"],
+                    "last_instr": functions[function]["last_instr"],
+                }
+        similar_functions = {}
+        for function_exe in exe:
+            for function_db in self.db_functions.get_all_names():
+                sim = cosine_similarity(
+                    np.array(exe[function_exe]["embedding"]),
+                    np.array(self.db_functions.get(function_db)["embedding"]),
+                )
+                if round(sim[0][0],3) >= float(self.db_functions.get(function_db)["threshold"]):
+                    similar_functions[function_exe] = similar_functions.get(function_exe, []).append(hex(exe[function_exe]["address"]))
+        return similar_functions
+            
 
 
 if __name__ == "__main__":
@@ -233,7 +285,7 @@ if __name__ == "__main__":
 
     safe = SAFE("src/SemaSCDG/plugin/SAFE/safe.pb")
     
-    embbedding = safe.embedd_function(args.file, int(args.address, 16))
+    embbedding = safe.embed_function(args.file, int(args.address, 16))
     if args.autoThreshold:
         args.threshold = find_threshold(safe, args.folders, args.file, int(args.address,16), args.outputFile, args.debug)
     safe.db_functions.add(

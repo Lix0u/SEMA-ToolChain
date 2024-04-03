@@ -1,0 +1,58 @@
+{
+    "murmurhash1":{
+        "file": "src/databases/malware/warzone3/6e14751bf3ea87216f5d25cb09b7cfaba3f36c3cb69a5c1c399fc0febebf932f.exe",
+        "address":"0x415b64",
+        "name":"murmurhash_6e1475_0x415b64",
+        "folders":["src/databases/malware/warzone","src/databases/malware/warzone3"],
+        "customHook":"MurmurHashHook",
+        "threshold": 0
+    },
+    "murmurhash2":{
+        "file": "src/databases/malware/warzone/0f3d2d1c663f1e9933c65c73ea89458b895e0bb29e8b10fbd8e99a18379fa2df.exe",
+        "address":"0x421c2f",
+        "name":"murmurhash_0f3d2d_0x421c2f",
+        "folders":["src/databases/malware/warzone","src/databases/malware/warzone3"],
+        "customHook":"MurmurHashHook",
+        "threshold": 0
+    },
+    "findstart1":{
+        "file":"src/databases/malware/warzone/0f3d2d1c663f1e9933c65c73ea89458b895e0bb29e8b10fbd8e99a18379fa2df.exe",
+        "address":"0x421d90",
+        "name":"findstart_0f3d2d_0x421d90",
+        "folders":["src/databases/malware/warzone","src/databases/malware/warzone3"],
+        "customHook":"FindStartHook",
+        "threshold": 0
+    },
+    "findstart2":{
+        "file":"src/databases/malware/warzone3/6e14751bf3ea87216f5d25cb09b7cfaba3f36c3cb69a5c1c399fc0febebf932f.exe",
+        "address":"0x415c0e",
+        "name":"findstart_6e1475_0x415c0e",
+        "folders":["src/databases/malware/warzone","src/databases/malware/warzone3"],
+        "customHook":"FindStartHook",
+        "threshold": 0
+    },
+    "findstart3":{
+        "file":"src/databases/malware/warzone/0bb084679cd7cc438060f3767431e46a6ca4b45cead37ca807fb60856ef811bc.exe",
+        "address":"0x413323",
+        "name":"findstart_0bb084_0x413323",
+        "folders":["src/databases/malware/warzone","src/databases/malware/warzone3"],
+        "customHook":"FindStartHook",
+        "threshold": 0
+    },
+    "copy1":{
+        "file":"src/databases/malware/warzone/0bb084679cd7cc438060f3767431e46a6ca4b45cead37ca807fb60856ef811bc.exe",
+        "address":"0x406056",
+        "name":"copy_0bb084_0x406056",
+        "folders":["src/databases/malware/warzone","src/databases/malware/warzone3"],
+        "customHook":"CopyHook",
+        "threshold": 0
+    },
+    "copy2":{
+        "file":"src/databases/malware/warzone/0bb084679cd7cc438060f3767431e46a6ca4b45cead37ca807fb60856ef811bc.exe",
+        "address":"0x40102c",
+        "name":"copy_0bb084_0x40102c",
+        "folders":["src/databases/malware/warzone","src/databases/malware/warzone3"],
+        "customHook":"Copy3Hook",
+        "threshold": 0
+    }
+}

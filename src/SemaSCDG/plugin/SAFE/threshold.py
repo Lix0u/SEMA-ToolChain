@@ -2,14 +2,6 @@ import os
 import numpy as np
 import json
 from sklearn.metrics.pairwise import cosine_similarity
-import psutil
-
-def kill_radare_process():
-    """kill all radare2 processes
-    """
-    for proc in psutil.process_iter():
-        if proc.name() == "radare2":
-            proc.kill()
             
 def find_threshold(safe, folders, binary, address, output=None, debug=False):
     """find the smallest threshold that only matches the same function
@@ -30,7 +22,7 @@ def find_threshold(safe, folders, binary, address, output=None, debug=False):
     else:
         thresholds = {1: 0, 0.98: 0, 0.95: 0, 0.93: 0, 0.90: 0}
 
-    embedding = safe.embedd_function(binary, address)
+    embedding = safe.embed_function(binary, address)
     if embedding is None:
         print("Function not found")
         exit(1)
@@ -43,22 +35,23 @@ def find_threshold(safe, folders, binary, address, output=None, debug=False):
         if file_name == binary_name:
             continue
         print("Processing file: " + file_name)
-        best_sim = 0
-        best_emb = None
+        best_sim = [0,0]
+        best_emb = [None, None]
         embeddings = safe.get_embeddings(file)
-        kill_radare_process()
         for emb in embeddings.keys():
             sim = cosine_similarity(np.array(embedding), np.array(embeddings[emb]['embedding']))
-            if sim > best_sim:
-                best_sim = sim
-                best_emb = emb
-        for threshold in thresholds.keys():
-            if round(best_sim[0][0],3) >= threshold:
-                if debug:
-                    thresholds[threshold].append(file_name + ':' + hex(embeddings[best_emb]['address']))
-                else:
-                    thresholds[threshold] += 1
-                break
+            if round(sim[0][0],3) > min(best_sim):
+                i = best_sim.index(min(best_sim))
+                best_sim[i] = round(sim[0][0],3)
+                best_emb[i] = emb
+        for b in range(2):
+            for threshold in thresholds.keys():
+                if best_sim[b] >= threshold:
+                    if debug:
+                        thresholds[threshold].append(file_name + ':' + hex(embeddings[best_emb[b]]['address']))
+                    else:
+                        thresholds[threshold] += 1
+                    break
         if output != None:
             json.dump(thresholds, open(output, 'w'), indent=4)
     if debug:
