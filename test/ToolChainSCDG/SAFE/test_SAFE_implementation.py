@@ -17,9 +17,9 @@ sample = [os.path.join('src/databases/malware/warzone', file) for file in random
 
 
 for s in sample:
-    command_SAFE = f"python3 src/SemaSCDG/SemaSCDG.py --DFS --hooks_SAFE --sim_file --verbose_scdg {s}"
+    command_SAFE = f"python3 src/SemaSCDG/SemaSCDG.py --CDFS --hooks_SAFE --sim_file --verbose_scdg {s}"
     output_SAFE = f"test/ToolChainSCDG/SAFE/output_test_SAFE_implementation/output_warzone_SAFE_{s.split('/')[-1][:6]}.txt"
-    command_no_SAFE = f"python3 src/SemaSCDG/SemaSCDG.py --DFS --hooks --sim_file --verbose_scdg {s}"
+    command_no_SAFE = f"python3 src/SemaSCDG/SemaSCDG.py --CDFS --hooks --sim_file --verbose_scdg {s}"
     output_no_SAFE = f"test/ToolChainSCDG/SAFE/output_test_SAFE_implementation/output_warzone_no_SAFE_{s.split('/')[-1][:6]}.txt"
     rprint("\n\n\n"+command_SAFE+"\n\n\n")
     subprocess.run(command_SAFE.split(' '), stdout=open(output_SAFE, 'w'), stderr=subprocess.STDOUT)
