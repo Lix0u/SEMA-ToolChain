@@ -4,7 +4,7 @@ import os
 # print(Path(__file__).parents[3])
 sys.path.append(str(Path(__file__).parents[3]))
 sys.path.append(str(Path(__file__).parents[3])+'/src/SemaSCDG/plugin')
-from PluginHooksSAFE2 import SAFE
+from PluginHooksSAFE import SAFE
 
 safe = SAFE("src/SemaSCDG/plugin/SAFE/safe.pb")
 

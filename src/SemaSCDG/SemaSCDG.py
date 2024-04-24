@@ -1,7 +1,7 @@
 import json as json_dumper
 from builtins import open as open_file
 import threading
-from plugin.PluginHooksSAFE2 import *
+from plugin.PluginHooksSAFE import *
 import gc
 
 # Personnal stuf

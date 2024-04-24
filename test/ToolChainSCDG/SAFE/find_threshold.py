@@ -2,11 +2,11 @@ import sys
 import os
 import numpy as np
 from argparse import ArgumentParser
-print(os.path.exists('src/SemaSCDG/plugin/PluginHooksSAFE2.py'))
+print(os.path.exists('src/SemaSCDG/plugin/PluginHooksSAFE.py'))
 
 #todo: fix the import
 
-from ..PluginHooksSAFE2 import SAFE
+from ..PluginHooksSAFE import SAFE
 import json
 from sklearn.metrics.pairwise import cosine_similarity
 

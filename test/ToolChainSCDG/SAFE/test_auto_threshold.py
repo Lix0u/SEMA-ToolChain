@@ -7,7 +7,7 @@ sys.path.append(str(Path(__file__).parents[3])+'/src/SemaSCDG/plugin')
 sys.path.append(str(Path(__file__).parents[3])+'/src/SemaSCDG/plugin/SAFE')
 print(sys.path)
 from threshold import find_threshold
-from PluginHooksSAFE2 import SAFE
+from PluginHooksSAFE import SAFE
 
 safe = SAFE("src/SemaSCDG/plugin/SAFE/safe.pb")
 folders = ["src/databases/malware/warzone", "src/databases/malware/warzone3"]

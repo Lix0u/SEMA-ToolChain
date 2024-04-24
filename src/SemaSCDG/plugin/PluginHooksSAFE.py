@@ -81,7 +81,6 @@ class SAFE:
                             "Function " + function_db + " is similar to " + function_exe + " with a similarity of " + str(sim)
                         )
                         print("\n\n\n\n\n\n\n\n\n\n\n")
-                        sleep(3)
                         if (
                             self.db_functions.get(function_db)["customSimProc"]
                             is not None

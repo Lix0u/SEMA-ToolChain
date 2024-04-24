@@ -13,8 +13,8 @@ with open('src/SemaSCDG/plugin/SAFE/known_functions.json', 'r') as file:
     known_functions = json.load(file)
 
 # create the commands to run
-command_auto_thresh = "python3 src/SemaSCDG/plugin/PluginHooksSAFE2.py -f {file} -a {address} -n {name} -T -F {folders} -c {cutomHook} -o output.json"
-command = "python3 src/SemaSCDG/plugin/PluginHooksSAFE2.py -f {file} -a {address} -n {name} -t {threshold} -c {cutomHook} -o output.json"
+command_auto_thresh = "python3 src/SemaSCDG/plugin/PluginHooksSAFE.py -f {file} -a {address} -n {name} -T -F {folders} -c {cutomHook} -o output.json"
+command = "python3 src/SemaSCDG/plugin/PluginHooksSAFE.py -f {file} -a {address} -n {name} -t {threshold} -c {cutomHook} -o output.json"
 
 for function in known_functions:
     f = known_functions[function]

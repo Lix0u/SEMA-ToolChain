@@ -1,6 +1,8 @@
 import logging
 import angr
+import sys
 
+sys.set_int_max_str_digits(0)
 lw = logging.getLogger("CustomSimProcedureWindows")
 
 
@@ -15,5 +17,10 @@ class WriteProcessMemory(angr.SimProcedure):
         lpNumberOfBytesWritten
     ):
         x = self.state.solver.eval(nSize)
-        self.state.memory.store(lpBaseAddress, self.state.memory.load(lpBuffer,x),size=x)
+        y = self.state.memory.load(lpBuffer,x)
+        print(y)
+        print(x)
+        print(lpBaseAddress)
+        
+        self.state.memory.store(lpBaseAddress, y, size=x)
         return 0x1
