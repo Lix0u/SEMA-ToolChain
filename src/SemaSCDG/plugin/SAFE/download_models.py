@@ -1,13 +1,14 @@
 # install gdown id not installed
 import sys
 import os
-#from time import sleep
+from time import sleep
 from rich import print as rprint
-
-if 'gdown' not in sys.modules:
-    os.system('pip install gdown')
-    #sleep(10)
-import gdown
+try:    
+    import gdown
+except ImportError:
+    os.system('python3 -m pip install gdown') # do it like this to avoid error: externally-managed-environment
+    sleep(10)
+    import gdown
 
 id_model = '1Kwl8Jy-g9DXe1AUjUZDhJpjRlDkB4NBs'
 id_i2v = '1CqJVGYbLDEuJmJV6KH4Dzzhy-G12GjGP'
