@@ -265,3 +265,5 @@ cmake ..
 make
 
 cd $ROOTPATH/
+
+python3 src/SemaSCDG/plugin/SAFE/download_models.py
