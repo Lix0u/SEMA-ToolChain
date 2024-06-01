@@ -121,28 +121,28 @@ class PluginHooks: # TODO replace with classses
     def hook(self,state,proj,call_sim):
         for fun in self.hooks.keys():
             if fun == "copy" or fun == "copy_2":
-                print("\n\n\n copy hook : "+ str(len(self.general_hooks[fun]))+" \n\n\n\n")
+                print("\n\n\n copy hook : "+hex(self.hooks[fun])+ " " + str(len(self.general_hooks[fun]))+" \n\n\n\n")
                 proj.hook(
                     self.hooks[fun], #adress of the function
                     call_sim.custom_simproc_windows["custom_hook"]["CopyHook"](plength=len(self.general_hooks[fun])),
                     length=len(self.general_hooks[fun])
                 )        
             elif fun == "copy_3":
-                print("\n\n\n copy hook : "+ str(len(self.general_hooks[fun]))+" \n\n\n\n")
+                print("\n\n\n copy hook : "+ str(len(self.general_hooks[fun]))+" "+hex(self.hooks[fun])+ " " + str(len(self.general_hooks[fun]))+" \n\n\n\n")
                 proj.hook(
                     self.hooks[fun],
                     call_sim.custom_simproc_windows["custom_hook"]["Copy3Hook"](plength=len(self.general_hooks[fun])),
                     length=len(self.general_hooks[fun])
                 )
             elif fun == "murmurhash":
-                print("\n\n\n murmurhash hook : "+ str(len(self.internal_functions_hooks[fun]))+" \n\n\n\n")
+                print("\n\n\n murmurhash hook : "+hex(self.hooks[fun])+ " "+ str(len(self.internal_functions_hooks[fun]))+" \n\n\n\n")
                 proj.hook(
                     self.hooks[fun],
                     call_sim.custom_simproc_windows["custom_hook"]["MurmurHashHook"](plength=len(self.internal_functions_hooks[fun])),
                     length=len(self.internal_functions_hooks[fun])
                 )        
             elif fun == "murmurhash2":
-                print("\n\n\n murmurhash hook : "+ str(len(self.internal_functions_hooks[fun]))+" \n\n\n\n")
+                print("\n\n\n murmurhash hook : "+hex(self.hooks[fun])+ " "+ str(len(self.internal_functions_hooks[fun]))+" \n\n\n\n")
                 proj.hook(
                     self.hooks[fun],
                     call_sim.custom_simproc_windows["custom_hook"]["MurmurHash2Hook"](plength=len(self.internal_functions_hooks[fun])),
@@ -156,7 +156,7 @@ class PluginHooks: # TODO replace with classses
                     length=len(self.internal_functions_hooks[fun])
                 )  
             elif "findstart" in fun:
-                print("\n\n\n findstart hook : "+ str(len(self.internal_functions_hooks[fun]))+" \n\n\n\n")
+                print("\n\n\n findstart hook : "+hex(self.hooks[fun])+ " "+ str(len(self.internal_functions_hooks[fun]))+" \n\n\n\n")
                 proj.hook(
                     self.hooks[fun],
                     call_sim.custom_simproc_windows["custom_hook"]["FindStartHook"](plength=len(self.internal_functions_hooks[fun])),

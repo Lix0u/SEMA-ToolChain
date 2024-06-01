@@ -1182,7 +1182,7 @@ class SemaSCDG:
             self.log.info(dump_file["sections"][name])
 
     def start_scdg(self, args, is_fl=False,csv_file=None):
-        
+    
         sys.setrecursionlimit(10000)
         gc.collect()
         
@@ -1277,7 +1277,7 @@ def main():
     args_parser = ArgumentParserSCDG(toolc)
     args = args_parser.parse_arguments()
     args_parser.update_tool(args)
-    toolc.start_scdg(args, is_fl=False,csv_file=None)
+    toolc.start_scdg(args, is_fl=False,csv_file=False)
 
 
 if __name__ == "__main__":

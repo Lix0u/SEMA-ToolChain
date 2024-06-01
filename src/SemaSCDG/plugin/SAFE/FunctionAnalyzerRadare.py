@@ -192,7 +192,7 @@ class RadareFunctionAnalyzer:
                     "asm": asm,
                     "address": address,
                     "length": my_function["size"],
-                    "last_instr":instructions[-1]
+                    "last_instr": 'X_ret' if not my_function['noreturn'] else ''
                 }
             except: # sometimes radare2 flag as function a non-function
                 # print(

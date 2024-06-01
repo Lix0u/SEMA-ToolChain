@@ -78,13 +78,10 @@ class SAFE:
                     if round(sim[0][0],3) >= float(self.db_functions.get(function_db)["threshold"]):
                         print("\n\n\n\n\n\n\n\n\n\n\n")
                         print(
-                            "Function " + function_db + " is similar to " + function_exe + " with a similarity of " + str(sim)
+                            "Function " + function_db + " is similar to " + function_exe + " with a similarity of " + str(sim)+ " len "+ str(db_exe[function_exe]["len"]-1)
                         )
                         print("\n\n\n\n\n\n\n\n\n\n\n")
-                        if (
-                            self.db_functions.get(function_db)["customSimProc"]
-                            is not None
-                        ):
+                        if (self.db_functions.get(function_db)["customSimProc"] is not None):
                             # if last byte is 0xc3 (ret) then we need to remove it
                             # with open(filename, "rb") as f:
                             #     #read byte at the end of the function
@@ -199,7 +196,8 @@ class SAFE:
                     np.array(self.db_functions.get(function_db)["embedding"]),
                 )
                 if round(sim[0][0],3) >= float(self.db_functions.get(function_db)["threshold"]):
-                    similar_functions[function_exe] = similar_functions.get(function_exe, []).append(hex(exe[function_exe]["address"]))
+                    similar_functions[function_db] = similar_functions.get(function_db, [])
+                    similar_functions[function_db].append((hex(exe[function_exe]["address"]),round(sim[0][0],3)))
         return similar_functions
             
 

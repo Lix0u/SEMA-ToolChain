@@ -17,4 +17,5 @@ files = [os.path.join(folder, file) for file in files]
 matches = {}
 for file in files:
     similar_functions = safe.get_functions_similar_to_db(file)
+    print(file)
     print(similar_functions)
